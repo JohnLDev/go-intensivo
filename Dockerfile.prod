@@ -1,0 +1,14 @@
+FROM golang:1.19 as builder
+WORKDIR /app
+COPY . .
+# Build the Go app on linux
+# CGO_ENABLED=0 is required to build a static binary
+# GOOS=linux is required to build a binary for linux
+# GOARCH=amd64 is required to build a binary for amd64
+# -o is required to specify the output file
+# -ldflags="-w -s" is to generate a small binary without some tags
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o server -ldflags="-w -s" ./cmd/consumer/main.go
+
+FROM scratch
+COPY --from=builder /app/server /server
+ENTRYPOINT ["/server"]
